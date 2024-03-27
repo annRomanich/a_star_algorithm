@@ -79,12 +79,11 @@ vector<Coord> neighbours(Coord c, vector<vector<int>> field)
     return result;
 }
 
-// Функция для обхода графа в ширину
 vector<Coord> aStarSearch(Coord start, Coord goal, vector<vector<int>> field) {
     auto startNode = make_shared<Visited>(start);
     startNode->estimate = distance(start, goal);
 
-    set<shared_ptr<Visited>> openSet{
+    vector<shared_ptr<Visited>> openSet{
         startNode,
     };
     set<Coord> closedSet;
@@ -106,30 +105,30 @@ vector<Coord> aStarSearch(Coord start, Coord goal, vector<vector<int>> field) {
         openSet.erase(currentIt);
         closedSet.insert(current->coord);
 
-        // Получаем все смежные вершины текущей вершины и если они не были посещены,
-        // помечаем их как посещенные и добавляем в очередь
         for (auto neighbour : neighbours(current->coord, field)) {
             if (closedSet.count(neighbour) || field[neighbour.y][neighbour.x] == 1) {
                 continue;
             }
-            double newLen = current->pathLength + 1;
-            auto neighbourNode = openSet.find(make_shared<Visited>(neighbour));
-            if (neighbourNode != openSet.end()) {
-                 if(newLen < (*neighbourNode)->pathLength) {
-                    (*neighbourNode)->parent = current;
-                    (*neighbourNode)->pathLength = newLen;
-                    (*neighbourNode)->estimate = distance((*neighbourNode)->coord, goal);
-                }
+
+            auto neighbourNodeIt = std::find_if(openSet.begin(), openSet.end(),
+                                              [&](auto& i){return i->coord == neighbour;});
+
+            shared_ptr<Visited> neighbourNode;
+            if (neighbourNodeIt != openSet.end()) {
+                neighbourNode = *neighbourNodeIt;
             }
             else {
-                auto newNeighbourNode = make_shared<Visited>(neighbour);
-                newNeighbourNode->parent = current;
-                newNeighbourNode->pathLength = newLen;
-                newNeighbourNode->estimate = distance(newNeighbourNode->coord, goal);
-                openSet.insert(newNeighbourNode);
+                neighbourNode = openSet.emplace_back(make_shared<Visited>(neighbour));
+                neighbourNode->pathLength = std::numeric_limits<double>::infinity();
+            }
+
+            double newLen = current->pathLength + 1;
+            if (newLen < neighbourNode->pathLength) {
+                neighbourNode->parent = current;
+                neighbourNode->pathLength = newLen;
+                neighbourNode->estimate = distance(neighbourNode->coord, goal);
             }
         }
     }
-
     return {};
 }

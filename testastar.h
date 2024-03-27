@@ -9,20 +9,20 @@ class TestAStar : public QObject
     Q_OBJECT
 private slots:
     void happyPath() {
-        // Создаем граф с 4 вершинами
-        vector<vector<int>> g({
-                    {0, 0, 0, 0, 0},
-                    {0, 0, 0, 1, 0},
-                    {0, 0, 0, 1, 0},
-                    {0, 1, 1, 1, 0},
-                    {0, 0, 0, 1, 0},
-                });
+        vector<vector<int>> field ({
+            {0, 0, 0, 0, 0},
+            {0, 0, 0, 1, 0},
+            {0, 0, 0, 1, 0},
+            {0, 1, 1, 1, 0},
+            {0, 0, 0, 1, 0},
+        });
         Coord start{2, 4};
         Coord end{4, 4};
-        auto a = aStarSearch(start, end, g);
+        auto actual = aStarSearch(start, end, field);
+
         vector<Coord> expected{{2,4}, {1,4}, {0,3}, {1,2}, {2,1}, {3,0}, {4,1}, {4,2}, {4,3}, {4,4}};
 
-        QCOMPARE(a, expected);
+        QCOMPARE(actual, expected);
     }
 };
 
