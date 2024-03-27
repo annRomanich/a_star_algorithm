@@ -71,7 +71,7 @@ vector<Coord> neighbours(Coord c, vector<vector<int>> field)
         })
     {
         if(neighbour.x >= 0 && neighbour.y >= 0 &&
-           neighbour.x < field.at(0).size() && neighbour.y < field.size()) {
+           neighbour.x < int(field.at(0).size()) && neighbour.y < int(field.size())) {
             result.push_back(neighbour);
         }
     }
