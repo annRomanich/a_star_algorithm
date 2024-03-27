@@ -6,21 +6,17 @@
 #include <set>
 #include <cmath>
 
-struct Visited {
+struct Node {
     Coord coord;
-    shared_ptr<Visited> parent;
+    shared_ptr<Node> parent;
 
     double pathLength = 0;
     double estimate = 0;
 
-    Visited(Coord c, shared_ptr<Visited> p = nullptr)
-        : coord(c), parent(p)
-    {
-    }
-
     double fValue() {
         return pathLength + estimate;
     }
+
     vector<Coord> reconstructPath() {
         vector<Coord> currentPath;
 
@@ -52,14 +48,10 @@ double distance(Coord start, Coord end) {
     return sqrt(pow(x, 2) + pow(y, 2));
 }
 
-bool operator<(const Visited& l, const Visited& r) {
-    return l.coord < r.coord;
-}
-
-vector<Coord> neighbours(Coord c, vector<vector<int>> field)
+vector<Coord> neighbours(Coord c, const vector<vector<int>> &field)
 {
     vector<Coord> result;
-    for (Coord neighbour : vector<Coord>{
+    for (Coord neighbour : vector<Coord> {
             {c.x - 1, c.y},
             {c.x - 1, c.y - 1},
             {c.x    , c.y - 1},
@@ -70,8 +62,9 @@ vector<Coord> neighbours(Coord c, vector<vector<int>> field)
             {c.x - 1, c.y + 1},
         })
     {
-        if(neighbour.x >= 0 && neighbour.y >= 0 &&
-           neighbour.x < int(field.at(0).size()) && neighbour.y < int(field.size())) {
+        if (neighbour.x >= 0 && neighbour.y >= 0 &&
+           neighbour.x < int(field.at(0).size()) && neighbour.y < int(field.size()))
+        {
             result.push_back(neighbour);
         }
     }
@@ -79,11 +72,12 @@ vector<Coord> neighbours(Coord c, vector<vector<int>> field)
     return result;
 }
 
-vector<Coord> aStarSearch(Coord start, Coord goal, vector<vector<int>> field) {
-    auto startNode = make_shared<Visited>(start);
+vector<Coord> aStarSearch(Coord start, Coord goal, const vector<vector<int>> &field) {
+    auto startNode = make_shared<Node>();
+    startNode->coord = start;
     startNode->estimate = distance(start, goal);
 
-    vector<shared_ptr<Visited>> openSet{
+    vector<shared_ptr<Node>> openSet{
         startNode,
     };
     set<Coord> closedSet;
@@ -97,7 +91,6 @@ vector<Coord> aStarSearch(Coord start, Coord goal, vector<vector<int>> field) {
         }
 
         auto current = *currentIt;
-
         if (current->coord == goal) {
             return current->reconstructPath();
         }
@@ -110,15 +103,16 @@ vector<Coord> aStarSearch(Coord start, Coord goal, vector<vector<int>> field) {
                 continue;
             }
 
-            auto neighbourNodeIt = std::find_if(openSet.begin(), openSet.end(),
-                                              [&](auto& i){return i->coord == neighbour;});
+            auto neighbourNodeIt =
+                std::find_if(openSet.begin(), openSet.end(), [&](auto& i){ return i->coord == neighbour; });
 
-            shared_ptr<Visited> neighbourNode;
+            shared_ptr<Node> neighbourNode;
             if (neighbourNodeIt != openSet.end()) {
                 neighbourNode = *neighbourNodeIt;
             }
             else {
-                neighbourNode = openSet.emplace_back(make_shared<Visited>(neighbour));
+                neighbourNode = openSet.emplace_back(make_shared<Node>());
+                neighbourNode->coord = neighbour;
                 neighbourNode->pathLength = std::numeric_limits<double>::infinity();
             }
 
